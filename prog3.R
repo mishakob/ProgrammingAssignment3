@@ -42,14 +42,6 @@ if(outcome == "heart failure") relevantColumn <- "Mortality.Rate.heart.failure.N
 if(outcome == "pneumonia") relevantColumn <- "Mortality.Rate.pneumonia.Numeric"
 relevantData <- subset(outcome.df, State==state)
 # head(relevantData)
-best.rate <- min(relevantData[[relevantColumn]], na.rm=T)
-min.vector <- vector()
-for(i in 1:nrow(relevantData[[relevantColumn]]))
-{
-    if    
-}
-
-best.hospital <- 
 
 if(outcome == "heart attack") relevantData <- subset(outcome.df, State==state, select = c(Mortality.Rate.heart.attack.Numeric,Hospital.Name))
 if(outcome == "heart failure") relevantData <- subset(outcome.df, State==state, select = c(Mortality.Rate.heart.failure.Numeric,Hospital.Name))
@@ -92,3 +84,62 @@ rankhospital <- function(state, outcome, num = "best") {
         ## Return hospital name in that state with the given rank
         ## 30-day death rate
 }
+###########################################################################
+###########################################################################
+setwd("C:/Users/misha/Documents/coursera/intro-to-R/ProgrammingAssignment3")
+
+outcome.df <- read.csv("./outcome-of-care-measures.csv", colClasses = "character",na.strings=c("Not Available","NA"))
+names(outcome.df) <- gsub("\\.\\.+", "\\.", names(outcome.df)) #removing multiple "." characters
+# creating numeric mortality rate columns
+outcome.df$Mortality.Rate.heart.attack.Numeric <- as.numeric(outcome.df$Hospital.30.Day.Death.Mortality.Rates.from.Heart.Attack)
+outcome.df$Mortality.Rate.heart.failure.Numeric <- as.numeric(outcome.df$Hospital.30.Day.Death.Mortality.Rates.from.Heart.Failure)
+outcome.df$Mortality.Rate.pneumonia.Numeric <- as.numeric(outcome.df$Hospital.30.Day.Death.Mortality.Rates.from.Pneumonia)
+
+#################### INPUT
+state <- "TX"
+outcome <- "heart failure"
+num <- "worst"
+##########################
+
+# checking state is valid
+if(!(state %in% outcome.df$State)) stop("invalid state")
+
+# checking outcome is valid
+# valid outcome: "heart attack","heart failure","pneumonia"
+
+if(!(outcome %in% c("heart attack","heart failure","pneumonia"))) 
+        stop("invalid outcome")
+
+if(outcome=="heart attack")
+{
+        new.subset <- subset(outcome.df,State==state & !is.na(Mortality.Rate.heart.attack.Numeric), select=c(Hospital.Name,Mortality.Rate.heart.attack.Numeric))
+        subset.ordered <- new.subset[with(new.subset, order(Mortality.Rate.heart.attack.Numeric, Hospital.Name)), ]
+}
+if(outcome=="heart failure")
+{
+        new.subset <- subset(outcome.df,State==state & !is.na(Mortality.Rate.heart.failure.Numeric), select=c(Hospital.Name,Mortality.Rate.heart.failure.Numeric))
+        subset.ordered <- new.subset[with(new.subset, order(Mortality.Rate.heart.failure.Numeric, Hospital.Name)), ]
+}
+if(outcome=="pneumonia")
+{
+        new.subset <- subset(outcome.df,State==state & !is.na(Mortality.Rate.pneumonia.Numeric), select=c(Hospital.Name,Mortality.Rate.pneumonia.Numeric))
+        subset.ordered <- new.subset[with(new.subset, order(Mortality.Rate.pneumonia.Numeric, Hospital.Name)), ]
+}
+if(class(num)=="numeric")
+{
+        subset.ordered$Hospital.Name[num]
+}
+if(num=="best")
+{
+        head(subset.ordered$Hospital.Name,1)
+}
+if(num=="worst")
+{
+        tail(subset.ordered$Hospital.Name,1)
+}     
+
+source("rankhospital.R")
+rankhospital("TX", "heart attack", 1)
+
+source("http://d396qusza40orc.cloudfront.net/rprog%2Fscripts%2Fsubmitscript3.R")
+submit()
